@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IBCC Account Level Review QA Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<style>
+:root{color-scheme:light;--p:#059669;--pl:#ECFDF5;--g:#059669;--gl:#ECFDF5;--r:#DC2626;--rl:#FEF2F2;--w:#D97706;--wl:#FFFBEB;--b:#4F46E5;--bl:#EEF2FF;--s0:#F8FAFC;--s1:#F1F5F9;--s2:#E2E8F0;--t3:#64748B;--t2:#475569;--t1:#1E293B;--rad:10px;--sh:0 1px 3px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--s0);color:var(--t1);font-size:14px}
+.hdr{background:#fff;border-bottom:1px solid var(--s2);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr h1{font-size:17px;font-weight:700}.hdr p{font-size:11px;color:var(--t3);margin-top:2px}
+.upload-lbl{display:flex;align-items:center;gap:6px;background:#059669;color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px 20px 0}
+.sc{background:#fff;border-radius:var(--rad);padding:18px;box-shadow:var(--sh);border:1px solid var(--s1)}
+.sc .lbl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
+.sc .val{font-size:28px;font-weight:700;margin:6px 0 3px}.sc .sub{font-size:11px;color:var(--t3)}
+.tabs-wrap{padding:16px 20px 0}
+.tabs{display:flex;gap:3px;background:var(--s1);border-radius:9px;padding:3px;width:fit-content}
+.tb{padding:7px 15px;border:none;background:none;border-radius:7px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tb.active{background:#fff;color:#059669;font-weight:700;box-shadow:var(--sh)}
+.tb:hover:not(.active){background:var(--s2)}
+.panel{display:none;padding:16px 20px}.panel.active{display:block}
+.card{background:#fff;border-radius:var(--rad);box-shadow:var(--sh);border:1px solid var(--s1);overflow:hidden}
+.ch{padding:14px 18px;border-bottom:1px solid var(--s1);display:flex;align-items:center;justify-content:space-between}
+.ch h3{font-size:13px;font-weight:600}.ch .sub{font-size:11px;color:var(--t3);margin-top:2px}
+.cb{padding:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);padding:9px 14px;background:var(--s0);border-bottom:1px solid var(--s2);text-align:left}
+td{padding:11px 14px;border-bottom:1px solid var(--s1);font-size:13px;color:var(--t2)}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--s0)}
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.bp{background:var(--gl);color:var(--g)}.bf{background:var(--rl);color:var(--r)}.bw{background:var(--wl);color:var(--w)}.bb{background:var(--bl);color:var(--b)}.bg-gray{background:var(--s2);color:var(--t2)}
+.pw{background:var(--s2);border-radius:4px;height:6px;overflow:hidden;min-width:70px}
+.pb{height:100%;border-radius:4px}
+.iitem{padding:11px 16px;border-bottom:1px solid var(--s1);display:flex;gap:10px}
+.iitem:last-child{border-bottom:none}
+.idot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.itxt{font-size:12px;color:var(--t2);line-height:1.5}.imeta{font-size:11px;color:var(--t3);margin-top:2px}
+.empty{text-align:center;padding:32px;color:var(--t3);font-size:13px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--t1);color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:500;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+select{padding:7px 11px;border:1px solid var(--s2);border-radius:8px;font-size:13px;color:var(--t2);background:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div><h1>🏦 IBCC — Account Level Review QA</h1><p id="dsub">Loading…</p></div>
+  <label class="upload-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Upload CSV<input type="file" accept=".csv" id="csvup" style="display:none"></label>
+</div>
+<div class="stats">
+  <div class="sc"><div class="lbl">Total Reviews</div><div class="val" id="s-total" style="color:var(--t1)">—</div><div class="sub" id="s-dates">—</div></div>
+  <div class="sc"><div class="lbl">Team Pass Rate</div><div class="val" id="s-rate" style="color:var(--g)">—</div><div class="sub" id="s-rate-sub">—</div></div>
+  <div class="sc"><div class="lbl">Total Failed</div><div class="val" id="s-fail" style="color:var(--r)">—</div><div class="sub" id="s-fail-sub">—</div></div>
+  <div class="sc"><div class="lbl">Top Performer</div><div class="val" id="s-top" style="color:#059669;font-size:18px;margin-top:10px">—</div><div class="sub" id="s-top-sub">—</div></div>
+</div>
+<div class="tabs-wrap"><div class="tabs">
+  <button class="tb active" onclick="swt('ov')">📊 Overview</button>
+  <button class="tb" onclick="swt('rk')">🏆 Rankings</button>
+  <button class="tb" onclick="swt('ins')">🔍 Issues & Insights</button>
+  <button class="tb" onclick="swt('det')">👤 Agent Detail</button>
+</div></div>
+
+<div id="pan-ov" class="panel active">
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card"><div class="ch"><div><h3>Pass Rate by Review Type</h3><div class="sub">Acct Review vs ATO Review</div></div></div><div class="cb" style="position:relative;height:220px"><canvas id="c-rtype"></canvas></div></div>
+    <div class="card"><div class="ch"><div><h3>Decision Rank Distribution</h3><div class="sub">Rank 1 = significant issue · Rank 2 = coaching · Rank 3 = correct</div></div></div><div class="cb" style="position:relative;height:220px"><canvas id="c-rnk"></canvas></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><div><h3>Agent Decision vs Correct Decision</h3><div class="sub">Where decisions diverged from expected</div></div></div><div style="overflow-x:auto"><table><thead><tr><th>Agent</th><th>App ID</th><th>Agent Decision</th><th>Correct Decision</th><th>Result</th></tr></thead><tbody id="mismatch-body"></tbody></table></div></div>
+    <div class="card"><div class="ch"><div><h3>Coaching Summary</h3><div class="sub">By reviewer</div></div></div><div id="coach-list" style="max-height:300px;overflow-y:auto"></div></div>
+  </div>
+</div>
+
+<div id="pan-rk" class="panel">
+  <div class="g2">
+    <div class="card"><div class="ch"><div><h3>Pass Rate by Agent</h3><div class="sub" id="avg-sub">Dashed line = team average</div></div></div><div class="cb" style="position:relative;height:300px"><canvas id="c-agt"></canvas></div></div>
+    <div class="card"><div class="ch"><h3>Agent Leaderboard</h3></div><div style="overflow-x:auto"><table><thead><tr><th>Rank</th><th>Agent</th><th>Total</th><th>Passed</th><th>Failed</th><th>Pass Rate</th><th>vs Avg</th></tr></thead><tbody id="rkbody"></tbody></table></div></div>
+  </div>
+</div>
+
+<div id="pan-ins" class="panel">
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card"><div class="ch"><h3>Failure Notes <span id="fcnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="flist" style="max-height:320px;overflow-y:auto"></div></div>
+    <div class="card"><div class="ch"><h3>Coaching Points (Rank 2) <span id="ccnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="clist" style="max-height:320px;overflow-y:auto"></div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>All Account Reviews</h3></div><div style="overflow-x:auto"><table><thead><tr><th>Date of Check</th><th>Agent Review Date</th><th>Agent</th><th>Review Type</th><th>App ID</th><th>Agent Decision</th><th>Correct Decision</th><th>Rank</th><th>Result</th><th>Issue / Notes</th><th>Coached By</th></tr></thead><tbody id="allbody"></tbody></table></div></div>
+</div>
+
+<div id="pan-det" class="panel">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <span style="font-size:13px;font-weight:600;color:var(--t2)">Select Agent:</span>
+    <select id="agsel" onchange="renderDet()"></select>
+  </div>
+  <div class="g3" id="detstats" style="margin-bottom:14px"></div>
+  <div class="card"><div class="ch"><h3 id="dettitle">Review History</h3></div><div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Review Type</th><th>Agent Decision</th><th>Correct Decision</th><th>Rank</th><th>Result</th><th>Issue / Notes</th><th>Coached By</th></tr></thead><tbody id="detbody"></tbody></table></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const MEDALS=['🥇','🥈','🥉'];
+const CHARTS={};
+function dc(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
+function parseDate(s){if(!s||s==='NaN')return null;const p=String(s).trim().split('/');if(p.length<3)return null;return new Date(+p[2],+p[0]-1,+p[1]);}
+function fmt(d){return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+const RAW=[
+  {reviewType:'Acct Review',dateOfCheck:'4/9/2026',agentReviewDate:'4/8/2026',agent:'Genet Kebede',appId:'56e2c71c-eb8a-40ff',agentDecision:'Suspend',correctDecision:'Suspend',rank:2,passFail:'Pass',issue:'Did not add notes to Admin Portal and SF notes are not in correct format',coachedBy:'David'},
+  {reviewType:'Acct Review',dateOfCheck:'4/9/2026',agentReviewDate:'4/8/2026',agent:'Jerome Frimpong',appId:'4441a4f9-355a-4e8d',agentDecision:'Active',correctDecision:'Active',rank:2,passFail:'Pass',issue:'Notes are not in correct format.',coachedBy:'David'},
+  {reviewType:'Acct Review',dateOfCheck:'4/9/2026',agentReviewDate:'4/6/2026',agent:'Martins Emeje',appId:'77fbfdde-6546-4802',agentDecision:'Suspend',correctDecision:'Suspend',rank:2,passFail:'Pass',issue:'SF note is not in correct format.',coachedBy:'David'},
+  {reviewType:'Acct Review',dateOfCheck:'4/13/2026',agentReviewDate:'4/13/2026',agent:'Genet Kebede',appId:'33d91a16-99cd-4c59',agentDecision:'Suspend',correctDecision:'Suspend',rank:3,passFail:'Pass',issue:'',coachedBy:''},
+  {reviewType:'Acct Review',dateOfCheck:'4/13/2026',agentReviewDate:'4/13/2026',agent:'Martins Emeje',appId:'a49cac59-9e12-40a5',agentDecision:'Escalate',correctDecision:'Escalate',rank:3,passFail:'Pass',issue:'',coachedBy:''},
+  {reviewType:'Acct Review',dateOfCheck:'4/14/2026',agentReviewDate:'4/14/2026',agent:'Martins Emeje',appId:'ab7b2fc1-be00-47bb',agentDecision:'Suspend',correctDecision:'Suspend',rank:3,passFail:'Pass',issue:'',coachedBy:''},
+  {reviewType:'Acct Review',dateOfCheck:'4/16/2026',agentReviewDate:'4/13/2026',agent:'Genet Kebede',appId:'d8ee4602-1fff-477f',agentDecision:'No Decision',correctDecision:'Approve App',rank:1,passFail:'Fail',issue:'Case states security alert was completed. Analysis notated that it was completed but took no action. Action should have been to approve.',coachedBy:'David'},
+  {reviewType:'ATO Review',dateOfCheck:'4/16/2026',agentReviewDate:'4/15/2026',agent:'Martins Emeje',appId:'5742ceb1-461e-409f',agentDecision:'Unsure of Fraud',correctDecision:'Fraud',rank:2,passFail:'Pass',issue:'Many foreign IPs. All IPs in US are from an accountant. KYC has no info. No web presence other than biz website. Biz is an importer with a residential address for biz address.',coachedBy:'David'},
+  {reviewType:'Acct Review',dateOfCheck:'4/20/2026',agentReviewDate:'4/7/2026',agent:'Martins Emeje',appId:'08fcd4fb-4fd0-4659',agentDecision:'Cleared Fraud',correctDecision:'Fraud',rank:1,passFail:'Fail',issue:'IP logins shows a new place with new device, billpay was denied due to failed MFA, cc was applied for and denied almost immediately, suspicious txs (moonpay, Hfinance)',coachedBy:'Joshua'},
+  {reviewType:'Acct Review',dateOfCheck:'4/20/2026',agentReviewDate:'4/20/2026',agent:'Genet Kebede',appId:'427dfcde-b993-411b',agentDecision:'Suspend',correctDecision:'Suspend',rank:3,passFail:'Pass',issue:'',coachedBy:''},
+  {reviewType:'Acct Review',dateOfCheck:'4/21/2026',agentReviewDate:'4/21/2026',agent:'Martins Emeje',appId:'19baeda1-5431-4c61',agentDecision:'Suspend',correctDecision:'Suspend',rank:3,passFail:'Pass',issue:'',coachedBy:''},
+  {reviewType:'Acct Review',dateOfCheck:'4/21/2026',agentReviewDate:'4/21/2026',agent:'Genet Kebede',appId:'34bb0b20-6399-4ddd',agentDecision:'Suspend',correctDecision:'Suspend',rank:2,passFail:'Pass',issue:'IBOSS notes are missing',coachedBy:'David'},
+  {reviewType:'Acct Review',dateOfCheck:'4/22/2026',agentReviewDate:'4/22/2026',agent:'Martins Emeje',appId:'af713b66-f987-464b',agentDecision:'Suspend',correctDecision:'Suspend',rank:3,passFail:'Pass',issue:'',coachedBy:''}
+];
+
+function procData(rows){
+  const agents={};
+  rows.forEach(r=>{const nm=r.agent;if(!agents[nm])agents[nm]={name:nm,reviews:[],total:0,passed:0,failed:0,passRate:0};agents[nm].reviews.push(r);});
+  Object.values(agents).forEach(a=>{a.total=a.reviews.length;a.passed=a.reviews.filter(r=>r.passFail.toLowerCase()==='pass').length;a.failed=a.reviews.filter(r=>r.passFail.toLowerCase()==='fail').length;a.passRate=a.total>0?Math.round(a.passed/a.total*1000)/10:0;});
+  const agList=Object.values(agents).sort((a,b)=>b.passRate-a.passRate);
+  const tTotal=rows.length,tPass=rows.filter(r=>r.passFail.toLowerCase()==='pass').length,tFail=rows.filter(r=>r.passFail.toLowerCase()==='fail').length,tRate=tTotal?Math.round(tPass/tTotal*1000)/10:0;
+  const allDates=rows.map(r=>parseDate(r.dateOfCheck)).filter(Boolean).sort((a,b)=>a-b);
+  const dateRange=allDates.length>=2?`${fmt(allDates[0])} – ${fmt(allDates[allDates.length-1])} 2026`:'Recent reviews';
+  return{reviews:rows,agents,agList,tTotal,tPass,tFail,tRate,top:agList[0],dateRange};
+}
+
+function mkRType(d){
+  dc('rt');
+  const types={};d.reviews.forEach(r=>{if(!types[r.reviewType])types[r.reviewType]={pass:0,fail:0};r.passFail.toLowerCase()==='pass'?types[r.reviewType].pass++:types[r.reviewType].fail++;});
+  const labels=Object.keys(types);
+  CHARTS.rt=new Chart(document.getElementById('c-rtype'),{type:'bar',data:{labels,datasets:[{label:'Pass',data:labels.map(l=>types[l].pass),backgroundColor:'rgba(5,150,105,.75)',borderRadius:5,borderSkipped:false},{label:'Fail',data:labels.map(l=>types[l].fail),backgroundColor:'rgba(220,38,38,.75)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{x:{ticks:{font:{size:12}},grid:{display:false}},y:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#F1F5F9'}}}}});
+}
+function mkRnk(d){
+  dc('rk');
+  const rc={1:0,2:0,3:0};d.reviews.forEach(r=>{rc[r.rank]=(rc[r.rank]||0)+1;});
+  CHARTS.rk=new Chart(document.getElementById('c-rnk'),{type:'bar',data:{labels:['Rank 1 — Significant Issue','Rank 2 — Coaching Point','Rank 3 — Correct'],datasets:[{data:[rc[1],rc[2],rc[3]],backgroundColor:['#DC2626','#D97706','#059669'],borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+function mkAgt(d){
+  dc('ag');
+  const s=[...d.agList],avg=d.tRate;
+  document.getElementById('avg-sub').textContent=`Dashed line = team average (${avg}%)`;
+  CHARTS.ag=new Chart(document.getElementById('c-agt'),{type:'bar',data:{labels:s.map(a=>a.name.split(' ')[0]),datasets:[{type:'bar',label:'Pass %',data:s.map(a=>a.passRate),backgroundColor:s.map(a=>a.passRate>=avg?'rgba(5,150,105,.7)':'rgba(220,38,38,.7)'),borderRadius:5,borderSkipped:false},{type:'line',label:'Team Avg',data:s.map(()=>avg),borderColor:'#059669',borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+
+let APP=null;
+function render(d){
+  APP=d;
+  document.getElementById('s-total').textContent=d.tTotal;
+  document.getElementById('s-dates').textContent=d.dateRange;
+  document.getElementById('s-rate').textContent=d.tRate+'%';
+  document.getElementById('s-rate-sub').textContent=d.tPass+' passed of '+d.tTotal;
+  document.getElementById('s-fail').textContent=d.tFail;
+  document.getElementById('s-fail-sub').textContent=(100-d.tRate).toFixed(1)+'% fail rate';
+  document.getElementById('s-top').textContent=d.top.name;
+  document.getElementById('s-top-sub').textContent=d.top.passRate+'% pass rate 🏆';
+  document.getElementById('dsub').textContent=d.tTotal+' reviews · '+d.agList.length+' agents · Updated '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  const mismatches=d.reviews.filter(r=>r.agentDecision!==r.correctDecision);
+  document.getElementById('mismatch-body').innerHTML=mismatches.length?mismatches.map(r=>`<tr><td>${r.agent.split(' ')[0]}</td><td style="font-size:11px;color:var(--t3)">${r.appId}</td><td><span class="bdg bf">${r.agentDecision}</span></td><td><span class="bdg bp">${r.correctDecision}</span></td><td><span class="bdg ${r.passFail.toLowerCase()==='pass'?'bp':'bf'}">${r.passFail.toLowerCase()==='pass'?'✓ Pass':'✗ Fail'}</span></td></tr>`).join(''):'<tr><td colspan="5" class="empty">No decision mismatches found</td></tr>';
+
+  const coachMap={};d.reviews.filter(r=>r.coachedBy).forEach(r=>{if(!coachMap[r.coachedBy])coachMap[r.coachedBy]=[];coachMap[r.coachedBy].push(r);});
+  document.getElementById('coach-list').innerHTML=Object.entries(coachMap).map(([coach,reviews])=>`<div style="padding:10px 16px;border-bottom:1px solid var(--s1)"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:6px">👤 ${coach} <span style="font-weight:400;color:var(--t3)">(${reviews.length} session${reviews.length>1?'s':''})</span></div>${reviews.map(r=>`<div style="font-size:11px;color:var(--t2);margin-bottom:3px;padding-left:8px">· ${r.agent} — ${r.issue||'(no note)'}</div>`).join('')}</div>`).join('')||'<div class="empty">No coaching recorded</div>';
+
+  const fails=d.reviews.filter(r=>r.passFail.toLowerCase()==='fail'&&r.issue),coach2=d.reviews.filter(r=>r.rank===2&&r.issue);
+  document.getElementById('fcnt').textContent='('+fails.length+')';
+  document.getElementById('ccnt').textContent='('+coach2.length+')';
+  const makeList=items=>items.length?items.map(r=>`<div class="iitem"><div class="idot" style="background:#DC2626"></div><div><div class="itxt">${r.issue}</div><div class="imeta">${r.agent} · ${r.reviewType} · ${r.dateOfCheck}</div></div></div>`).join(''):'<div class="empty">None found</div>';
+  document.getElementById('flist').innerHTML=makeList(fails);
+  const makeCoachList=items=>items.length?items.map(r=>`<div class="iitem"><div class="idot" style="background:#D97706"></div><div><div class="itxt">${r.issue}</div><div class="imeta">${r.agent} · ${r.reviewType} · ${r.dateOfCheck}${r.coachedBy?' · Coached by '+r.coachedBy:''}</div></div></div>`).join(''):'<div class="empty">None found</div>';
+  document.getElementById('clist').innerHTML=makeCoachList(coach2);
+
+  document.getElementById('allbody').innerHTML=d.reviews.map(r=>`<tr><td>${r.dateOfCheck}</td><td>${r.agentReviewDate}</td><td><strong>${r.agent}</strong></td><td><span class="bdg ${r.reviewType==='ATO Review'?'bb':'bg-gray'}">${r.reviewType}</span></td><td style="font-size:11px;color:var(--t3)">${r.appId}</td><td>${r.agentDecision}</td><td>${r.correctDecision}</td><td><span class="bdg ${r.rank===3?'bp':r.rank===2?'bw':'bf'}">Rank ${r.rank}</span></td><td><span class="bdg ${r.passFail.toLowerCase()==='pass'?'bp':'bf'}">${r.passFail.toLowerCase()==='pass'?'✓ Pass':'✗ Fail'}</span></td><td style="font-size:12px;max-width:240px;color:var(--t2)">${r.issue||'—'}</td><td>${r.coachedBy||'—'}</td></tr>`).join('');
+
+  document.getElementById('agsel').innerHTML=d.agList.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  document.getElementById('rkbody').innerHTML=d.agList.map((a,i)=>{const c=a.passRate>=d.tRate?'var(--g)':'var(--r)';const diff=((a.passRate-d.tRate)>=0?'+':'')+((a.passRate-d.tRate).toFixed(1))+'%';return`<tr><td>${MEDALS[i]||(i+1)}</td><td><strong>${a.name}</strong></td><td>${a.total}</td><td style="color:var(--g)">${a.passed}</td><td style="color:var(--r)">${a.failed}</td><td><div style="display:flex;align-items:center;gap:7px"><div class="pw"><div class="pb" style="width:${a.passRate}%;background:${c}"></div></div><strong style="color:${c}">${a.passRate}%</strong></div></td><td><span class="bdg ${a.passRate>=d.tRate?'bp':'bf'}">${diff}</span></td></tr>`;}).join('');
+
+  mkRType(d);mkRnk(d);renderDet();
+}
+
+function renderDet(){
+  if(!APP)return;
+  const nm=document.getElementById('agsel').value,a=APP.agents[nm];if(!a)return;
+  const c=a.passRate>=APP.tRate?'var(--g)':'var(--r)',diff=(a.passRate-APP.tRate).toFixed(1);
+  document.getElementById('detstats').innerHTML=`<div class="sc"><div class="lbl">Total Reviews</div><div class="val" style="color:var(--t1)">${a.total}</div></div><div class="sc"><div class="lbl">Pass Rate</div><div class="val" style="color:${c}">${a.passRate}%</div><div class="sub">${a.passed} passed · ${a.failed} failed</div></div><div class="sc"><div class="lbl">vs Team Avg</div><div class="val" style="color:${c};font-size:22px;margin-top:10px">${diff>=0?'+':''}${diff}%</div><div class="sub">${a.passRate>=APP.tRate?'Above':'Below'} average</div></div>`;
+  document.getElementById('dettitle').textContent=nm+' — Account Review History ('+a.reviews.length+' reviews)';
+  const sorted=[...a.reviews].sort((x,y)=>{const px=parseDate(x.dateOfCheck),py=parseDate(y.dateOfCheck);if(!px)return 1;if(!py)return -1;return px-py;});
+  document.getElementById('detbody').innerHTML=sorted.map(r=>`<tr><td>${r.dateOfCheck}</td><td><span class="bdg ${r.reviewType==='ATO Review'?'bb':'bg-gray'}">${r.reviewType}</span></td><td>${r.agentDecision}</td><td>${r.correctDecision}</td><td><span class="bdg ${r.rank===3?'bp':r.rank===2?'bw':'bf'}">Rank ${r.rank}</span></td><td><span class="bdg ${r.passFail.toLowerCase()==='pass'?'bp':'bf'}">${r.passFail.toLowerCase()==='pass'?'✓ Pass':'✗ Fail'}</span></td><td style="font-size:12px;max-width:240px;color:var(--t2)">${r.issue||'—'}</td><td>${r.coachedBy||'—'}</td></tr>`).join('');
+}
+
+function swt(tab){
+  ['ov','rk','ins','det'].forEach((t,i)=>{document.querySelectorAll('.tb')[i].classList.toggle('active',t===tab);document.getElementById('pan-'+t).classList.toggle('active',t===tab);});
+  setTimeout(()=>{if(tab==='ov'&&APP){mkRType(APP);mkRnk(APP);}if(tab==='rk'&&APP)mkAgt(APP);if(tab==='det'&&APP)renderDet();},30);
+}
+
+function parseCSVRows(text){
+  const lines=text.trim().split('\n').slice(1);
+  return lines.map(line=>{
+    const cols=[];let i=0,cur='',inq=false;
+    while(i<line.length){if(line[i]==='"'){if(inq&&line[i+1]==='"'){cur+='"';i+=2;}else{inq=!inq;i++;}}else if(line[i]===','&&!inq){cols.push(cur.trim());cur='';i++;}else{cur+=line[i++];}}
+    cols.push(cur.trim());
+    return{reviewType:cols[0]||'',dateOfCheck:cols[1]||'',agentReviewDate:cols[2]||'',agent:(cols[3]||'').trim(),appId:(cols[4]||'').replace(/\r/g,'').trim(),agentDecision:cols[5]||'',correctDecision:cols[6]||'',rank:parseInt(cols[7])||3,passFail:cols[8]||'',issue:(cols[9]&&cols[9]!=='NaN')?cols[9]:'',coachedBy:(cols[10]&&cols[10]!=='NaN')?cols[10]:''};
+  }).filter(r=>r.agent&&r.agent!=='Agent Name');
+}
+
+document.getElementById('csvup').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=ev=>{try{render(procData(parseCSVRows(ev.target.result)));toast('✅ Data refreshed from '+f.name);}catch(err){toast('⚠️ Error: '+err.message);}e.target.value='';};
+  rd.readAsText(f);
+});
+
+render(procData(RAW));
+</script>
+</body>
+</html>

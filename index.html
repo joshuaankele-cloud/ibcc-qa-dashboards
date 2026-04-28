@@ -1,62 +1,45 @@
 <!DOCTYPE html>
-<script type="application/json" id="cowork-artifact-meta">
-{
-  "name": "Ibcc Qa Dashboard",
-  "schemaVersion": 1,
-  "description": "Interactive QA dashboard for IBCC Risk Operations team. Shows agent rankings, pass/fail rates, common failure categories, and individual agent drill-down. Supports CSV upload to refresh data."
-}
-</script>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IBCC QA Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<title>IBCC Application Review QA Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <style>
-:root{color-scheme:light;--p:#4F46E5;--pl:#EEF2FF;--g:#059669;--gl:#ECFDF5;--r:#DC2626;--rl:#FEF2F2;--w:#D97706;--wl:#FFFBEB;--s0:#F8FAFC;--s1:#F1F5F9;--s2:#E2E8F0;--t3:#64748B;--t2:#475569;--t1:#1E293B;--rad:10px;--sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05)}
+:root{color-scheme:light;--p:#4F46E5;--pl:#EEF2FF;--g:#059669;--gl:#ECFDF5;--r:#DC2626;--rl:#FEF2F2;--w:#D97706;--wl:#FFFBEB;--s0:#F8FAFC;--s1:#F1F5F9;--s2:#E2E8F0;--t3:#64748B;--t2:#475569;--t1:#1E293B;--rad:10px;--sh:0 1px 3px rgba(0,0,0,.08)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--s0);color:var(--t1);font-size:14px;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--s0);color:var(--t1);font-size:14px}
 .hdr{background:#fff;border-bottom:1px solid var(--s2);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.hdr h1{font-size:17px;font-weight:700;color:var(--t1)}
-.hdr p{font-size:11px;color:var(--t3);margin-top:2px}
-.upload-lbl{display:flex;align-items:center;gap:6px;background:var(--p);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
-.upload-lbl:hover{background:#4338CA}
+.hdr h1{font-size:17px;font-weight:700}.hdr p{font-size:11px;color:var(--t3);margin-top:2px}
+.upload-lbl{display:flex;align-items:center;gap:6px;background:var(--p);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px 20px 0}
 .sc{background:#fff;border-radius:var(--rad);padding:18px;box-shadow:var(--sh);border:1px solid var(--s1)}
 .sc .lbl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
-.sc .val{font-size:28px;font-weight:700;margin:6px 0 3px}
-.sc .sub{font-size:11px;color:var(--t3)}
+.sc .val{font-size:28px;font-weight:700;margin:6px 0 3px}.sc .sub{font-size:11px;color:var(--t3)}
 .tabs-wrap{padding:16px 20px 0}
 .tabs{display:flex;gap:3px;background:var(--s1);border-radius:9px;padding:3px;width:fit-content}
 .tb{padding:7px 15px;border:none;background:none;border-radius:7px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
 .tb.active{background:#fff;color:var(--p);font-weight:700;box-shadow:var(--sh)}
-.tb:hover:not(.active){background:var(--s2);color:var(--t1)}
-.panel{display:none;padding:16px 20px}
-.panel.active{display:block}
+.tb:hover:not(.active){background:var(--s2)}
+.panel{display:none;padding:16px 20px}.panel.active{display:block}
 .card{background:#fff;border-radius:var(--rad);box-shadow:var(--sh);border:1px solid var(--s1);overflow:hidden}
 .ch{padding:14px 18px;border-bottom:1px solid var(--s1);display:flex;align-items:center;justify-content:space-between}
-.ch h3{font-size:13px;font-weight:600}
-.ch .sub{font-size:11px;color:var(--t3);margin-top:2px}
+.ch h3{font-size:13px;font-weight:600}.ch .sub{font-size:11px;color:var(--t3);margin-top:2px}
 .cb{padding:18px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 table{width:100%;border-collapse:collapse}
 th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);padding:9px 14px;background:var(--s0);border-bottom:1px solid var(--s2);text-align:left}
 td{padding:11px 14px;border-bottom:1px solid var(--s1);font-size:13px;color:var(--t2)}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--s0)}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--s0)}
 .bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-.bp{background:var(--gl);color:var(--g)}
-.bf{background:var(--rl);color:var(--r)}
-.bw{background:var(--wl);color:var(--w)}
-.bb{background:var(--pl);color:var(--p)}
+.bp{background:var(--gl);color:var(--g)}.bf{background:var(--rl);color:var(--r)}.bw{background:var(--wl);color:var(--w)}
 .pw{background:var(--s2);border-radius:4px;height:6px;overflow:hidden;min-width:70px}
 .pb{height:100%;border-radius:4px}
 .iitem{padding:11px 16px;border-bottom:1px solid var(--s1);display:flex;gap:10px}
 .iitem:last-child{border-bottom:none}
 .idot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.itxt{font-size:12px;color:var(--t2);line-height:1.5}
-.imeta{font-size:11px;color:var(--t3);margin-top:2px}
+.itxt{font-size:12px;color:var(--t2);line-height:1.5}.imeta{font-size:11px;color:var(--t3);margin-top:2px}
 .empty{text-align:center;padding:32px;color:var(--t3);font-size:13px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--t1);color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:500;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -64,33 +47,23 @@ select{padding:7px 11px;border:1px solid var(--s2);border-radius:8px;font-size:1
 </style>
 </head>
 <body>
-
 <div class="hdr">
-  <div><h1>IBCC QA Dashboard</h1><p id="dsub">Loading…</p></div>
-  <label class="upload-lbl">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-    Upload New CSV
-    <input type="file" accept=".csv" id="csvup" style="display:none">
-  </label>
+  <div><h1>📋 IBCC — Application Review QA</h1><p id="dsub">Loading…</p></div>
+  <label class="upload-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Upload CSV<input type="file" accept=".csv" id="csvup" style="display:none"></label>
 </div>
-
 <div class="stats">
   <div class="sc"><div class="lbl">Total QAs</div><div class="val" id="s-total" style="color:var(--t1)">—</div><div class="sub" id="s-dates">—</div></div>
   <div class="sc"><div class="lbl">Team Pass Rate</div><div class="val" id="s-rate" style="color:var(--g)">—</div><div class="sub" id="s-rate-sub">—</div></div>
   <div class="sc"><div class="lbl">Total Failed</div><div class="val" id="s-fail" style="color:var(--r)">—</div><div class="sub" id="s-fail-sub">—</div></div>
   <div class="sc"><div class="lbl">Top Performer</div><div class="val" id="s-top" style="color:var(--p);font-size:18px;margin-top:10px">—</div><div class="sub" id="s-top-sub">—</div></div>
 </div>
+<div class="tabs-wrap"><div class="tabs">
+  <button class="tb active" onclick="swt('ov')">📊 Overview</button>
+  <button class="tb" onclick="swt('rk')">🏆 Rankings</button>
+  <button class="tb" onclick="swt('ins')">🔍 Issues & Insights</button>
+  <button class="tb" onclick="swt('det')">👤 Agent Detail</button>
+</div></div>
 
-<div class="tabs-wrap">
-  <div class="tabs">
-    <button class="tb active" onclick="swt('ov')">📊 Overview</button>
-    <button class="tb" onclick="swt('rk')">🏆 Agent Rankings</button>
-    <button class="tb" onclick="swt('ins')">🔍 Issues & Insights</button>
-    <button class="tb" onclick="swt('det')">👤 Agent Detail</button>
-  </div>
-</div>
-
-<!-- OVERVIEW -->
 <div id="pan-ov" class="panel active">
   <div class="g2" style="margin-bottom:14px">
     <div class="card"><div class="ch"><div><h3>Weekly Pass Rate Trend</h3><div class="sub">Pass % by review week</div></div></div><div class="cb"><canvas id="c-trend" height="200"></canvas></div></div>
@@ -99,48 +72,138 @@ select{padding:7px 11px;border:1px solid var(--s2);border-radius:8px;font-size:1
   <div class="card"><div class="ch"><div><h3>Decision Quality Rank Distribution</h3><div class="sub">Rank 1 = significant issue · Rank 2 = coaching point · Rank 3 = correct decision</div></div></div><div class="cb"><canvas id="c-rnk" height="100"></canvas></div></div>
 </div>
 
-<!-- RANKINGS -->
 <div id="pan-rk" class="panel">
   <div class="g2">
-    <div class="card"><div class="ch"><div><h3>Pass Rate by Agent</h3><div class="sub">Dashed line = team average (87.5%)</div></div></div><div class="cb" style="position:relative;height:300px"><canvas id="c-agt"></canvas></div></div>
-    <div class="card">
-      <div class="ch"><h3>Agent Leaderboard</h3></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Rank</th><th>Agent</th><th>Total</th><th>Passed</th><th>Failed</th><th>Pass Rate</th><th>vs Avg</th></tr></thead><tbody id="rkbody"></tbody></table></div>
-    </div>
+    <div class="card"><div class="ch"><div><h3>Pass Rate by Agent</h3><div class="sub" id="avg-sub">Dashed line = team average</div></div></div><div class="cb" style="position:relative;height:300px"><canvas id="c-agt"></canvas></div></div>
+    <div class="card"><div class="ch"><h3>Agent Leaderboard</h3></div><div style="overflow-x:auto"><table><thead><tr><th>Rank</th><th>Agent</th><th>Total</th><th>Passed</th><th>Failed</th><th>Pass Rate</th><th>vs Avg</th></tr></thead><tbody id="rkbody"></tbody></table></div></div>
   </div>
 </div>
 
-<!-- INSIGHTS -->
 <div id="pan-ins" class="panel">
   <div class="g2" style="margin-bottom:14px">
     <div class="card"><div class="ch"><div><h3>Failure Categories</h3><div class="sub">What's causing failures across the team</div></div></div><div class="cb" style="position:relative;height:240px"><canvas id="c-cats"></canvas></div></div>
     <div class="card"><div class="ch"><div><h3>Fail Rate by Decision Type</h3><div class="sub">Which decisions have highest error rate</div></div></div><div class="cb" style="position:relative;height:240px"><canvas id="c-dfail"></canvas></div></div>
   </div>
   <div class="g2">
-    <div class="card"><div class="ch"><h3>Failure Notes <span id="fcnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="flist" style="max-height:340px;overflow-y:auto"></div></div>
-    <div class="card"><div class="ch"><h3>Rank 2 Coaching Points <span id="ccnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="clist" style="max-height:340px;overflow-y:auto"></div></div>
+    <div class="card"><div class="ch"><h3>Failure Notes <span id="fcnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="flist" style="max-height:320px;overflow-y:auto"></div></div>
+    <div class="card"><div class="ch"><h3>Rank 2 Coaching Points <span id="ccnt" style="font-size:11px;color:var(--t3);font-weight:400"></span></h3></div><div id="clist" style="max-height:320px;overflow-y:auto"></div></div>
   </div>
 </div>
 
-<!-- AGENT DETAIL -->
 <div id="pan-det" class="panel">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
     <span style="font-size:13px;font-weight:600;color:var(--t2)">Select Agent:</span>
     <select id="agsel" onchange="renderDet()"></select>
   </div>
   <div class="g3" id="detstats" style="margin-bottom:14px"></div>
-  <div class="card">
-    <div class="ch"><h3 id="dettitle">Review History</h3></div>
-    <div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Agent Decision</th><th>Quality Rank</th><th>Result</th><th>Issue / Notes</th></tr></thead><tbody id="detbody"></tbody></table></div>
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card"><div class="ch"><div><h3>Failure Categories</h3><div class="sub" id="det-cats-sub">Issues driving failures for this agent</div></div></div><div class="cb" style="position:relative;height:200px"><canvas id="c-det-cats"></canvas></div></div>
+    <div class="card"><div class="ch"><div><h3>Fail Rate by Decision Type</h3><div class="sub">Agent-level error rate by decision</div></div></div><div class="cb" style="position:relative;height:200px"><canvas id="c-det-dfail"></canvas></div></div>
   </div>
+  <div class="card"><div class="ch"><h3 id="dettitle">Review History</h3></div><div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Agent Decision</th><th>Quality Rank</th><th>Result</th><th>Issue / Notes</th></tr></thead><tbody id="detbody"></tbody></table></div></div>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script>
-const CHARTS={};
-const MEDALS=['🥇','🥈','🥉'];
-const PALETTE=['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#F59E0B','#6B7280'];
+const CHARTS={},MEDALS=['🥇','🥈','🥉'],PALETTE=['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#F59E0B','#6B7280'];
+const CAT_COLORS={'Wrong Document Type':'#4F46E5','Missing Notes':'#DC2626','Note Quality':'#D97706','SOS Filing Error':'#059669','App Should Be Closed':'#7C3AED','Missing 9012 Case':'#6B7280','Incorrect Decision':'#DC2626','Address/ID Verification':'#0891B2'};
+function dc(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
+function parseDate(s){if(!s||s==='NaN')return null;const p=String(s).trim().split('/');if(p.length<3)return null;return new Date(+p[2],+p[0]-1,+p[1]);}
+function fmt(d){return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function normDec(d){if(!d)return null;const l=d.toLowerCase().trim();if(!l||l==='n/a'||l==='nan')return null;if(l.includes('approv')||l==='passed')return'Approved';if(l.includes('reject'))return'Rejected';if(l.includes('request')||l.includes('redoc'))return'Requested Docs';if(l.includes('hold')||l==='held'||l.includes('on hold')||l.includes('technical'))return'Hold/Held';if(l.includes('allow'))return'Allow';if(l.includes('security'))return'Security Call';return null;}
+function catIssue(issue){if(!issue||issue==='N/A'||issue==='')return null;const l=issue.toLowerCase();if(l.includes('wrong doc')||l.includes('incorrect doc')||l.includes('doc requested was incorrect')||l.includes('wrong document')||l.includes('requested the wrong'))return'Wrong Document Type';if(l.includes('no notes')||l.includes('did not leave any notes')||l.includes('left no notes'))return'Missing Notes';if(l.includes('clearer')||l.includes('more specific notes')||l.includes('not clear in internal')||l.includes('specify')||l.includes('note syntax'))return'Note Quality';if(l.includes('sos'))return'SOS Filing Error';if(l.includes('should have been closed')||l.includes('should be closed'))return'App Should Be Closed';if(l.includes('9012'))return'Missing 9012 Case';if(l.includes('incorrectly')||l.includes('incorrect')||(l.includes('failed to approve')||l.includes('failed to reject')||(l.includes('should have')&&!l.includes('should have been closed'))))return'Incorrect Decision';if(l.includes('address')||l.includes('expired')||l.includes('dl')||l.includes('driver'))return'Address/ID Verification';return null;}
+
+function pCSV(txt){const lines=txt.trim().split('\n').slice(1);return lines.map(line=>{const cols=[];let i=0,cur='',inq=false;while(i<line.length){if(line[i]==='"'){if(inq&&line[i+1]==='"'){cur+='"';i+=2;}else{inq=!inq;i++;}}else if(line[i]===','&&!inq){cols.push(cur.trim());cur='';i++;}else{cur+=line[i++];}}cols.push(cur.trim());return cols;});}
+
+function procData(rows){
+  const reviews=[],sumMap={};
+  rows.forEach(c=>{
+    const ag=(c[0]||'').trim();
+    if(ag&&ag!=='Agent Name'&&ag!=='Total'){
+      const issue=(c[4]||'').trim(),pf=(c[3]||'').trim().toLowerCase(),decNorm=normDec(c[1]);
+      if(!decNorm)return;
+      reviews.push({agent:ag,decision:(c[1]||'').trim(),rank:parseInt(c[2])||3,pass:pf==='pass',fail:pf==='fail',issue:issue==='N/A'?'':issue,cat:catIssue(issue==='N/A'?'':issue),decNorm,date:(c[5]||'').trim()});
+    }
+    const sa=(c[7]||'').trim();
+    if(sa&&sa!=='Agent Name'&&sa!=='Total')sumMap[sa]={total:+c[8]||0,passed:+c[9]||0,failed:+c[10]||0,passRate:parseFloat((c[11]||'0').replace('%',''))||0};
+  });
+  const agents={};
+  reviews.forEach(r=>{if(!agents[r.agent])agents[r.agent]={name:r.agent,reviews:[],...(sumMap[r.agent]||{})};agents[r.agent].reviews.push(r);});
+  Object.values(agents).forEach(a=>{if(!a.total){a.total=a.reviews.length;a.passed=a.reviews.filter(r=>r.pass).length;a.failed=a.reviews.filter(r=>r.fail).length;a.passRate=a.total>0?Math.round(a.passed/a.total*1000)/10:0;}});
+  const agList=Object.values(agents).sort((a,b)=>b.passRate-a.passRate);
+  const wkMap={};
+  reviews.forEach(r=>{const d=parseDate(r.date);if(!d)return;d.setDate(d.getDate()-d.getDay());const k=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});if(!wkMap[k])wkMap[k]={p:0,t:0,dt:d};wkMap[k].t++;if(r.pass)wkMap[k].p++;});
+  const weeks=Object.entries(wkMap).sort((a,b)=>a[1].dt-b[1].dt).map(([lbl,v])=>({lbl,rate:v.t?Math.round(v.p/v.t*100):0}));
+  const allDates=reviews.map(r=>parseDate(r.date)).filter(Boolean).sort((a,b)=>a-b);
+  const dateRange=allDates.length>=2?`${fmt(allDates[0])} – ${fmt(allDates[allDates.length-1])} 2026`:'Recent reviews';
+  const tTotal=agList.reduce((s,a)=>s+a.total,0),tPass=agList.reduce((s,a)=>s+a.passed,0),tFail=agList.reduce((s,a)=>s+a.failed,0),tRate=tTotal?Math.round(tPass/tTotal*1000)/10:0;
+  return{reviews,agents,agList,weeks,tTotal,tPass,tFail,tRate,top:agList[0],dateRange};
+}
+
+function mkTrend(d){dc('t');CHARTS.t=new Chart(document.getElementById('c-trend'),{type:'line',data:{labels:d.weeks.map(w=>w.lbl),datasets:[{label:'Pass %',data:d.weeks.map(w=>w.rate),borderColor:'#4F46E5',backgroundColor:'rgba(79,70,229,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#4F46E5',tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}});}
+function mkDec(d){dc('dc');const cnt={};d.reviews.forEach(r=>{cnt[r.decNorm]=(cnt[r.decNorm]||0)+1;});const s=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);CHARTS.dc=new Chart(document.getElementById('c-dec'),{type:'doughnut',data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:PALETTE,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{font:{size:10},padding:10}}}}});}
+function mkRnk(d){dc('rk');const rc={1:0,2:0,3:0};d.reviews.forEach(r=>{rc[r.rank]=(rc[r.rank]||0)+1;});CHARTS.rk=new Chart(document.getElementById('c-rnk'),{type:'bar',data:{labels:['Rank 1 — Significant Issue','Rank 2 — Coaching Point','Rank 3 — Correct'],datasets:[{data:[rc[1],rc[2],rc[3]],backgroundColor:['#DC2626','#D97706','#059669'],borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});}
+function mkAgt(d){dc('ag');const s=[...d.agList],avg=d.tRate;document.getElementById('avg-sub').textContent=`Dashed line = team average (${avg}%)`;CHARTS.ag=new Chart(document.getElementById('c-agt'),{type:'bar',data:{labels:s.map(a=>a.name.split(' ')[0]),datasets:[{type:'bar',label:'Pass %',data:s.map(a=>a.passRate),backgroundColor:s.map(a=>a.passRate>=avg?'rgba(5,150,105,.7)':'rgba(220,38,38,.7)'),borderRadius:5,borderSkipped:false},{type:'line',label:'Team Avg',data:s.map(()=>avg),borderColor:'#4F46E5',borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});}
+function mkCats(d){dc('ct');const cc={};d.reviews.filter(r=>r.fail&&r.cat).forEach(r=>{cc[r.cat]=(cc[r.cat]||0)+1;});const s=Object.entries(cc).sort((a,b)=>b[1]-a[1]);CHARTS.ct=new Chart(document.getElementById('c-cats'),{type:'bar',data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:PALETTE,borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});}
+function mkDFail(d){dc('df');const ds={};d.reviews.filter(r=>r.decNorm).forEach(r=>{if(!ds[r.decNorm])ds[r.decNorm]={p:0,f:0};r.fail?ds[r.decNorm].f++:ds[r.decNorm].p++;});const s=Object.entries(ds).filter(([,v])=>v.f>0).map(([k,v])=>({k,fr:Math.round(v.f/(v.p+v.f)*100)})).sort((a,b)=>b.fr-a.fr);CHARTS.df=new Chart(document.getElementById('c-dfail'),{type:'bar',data:{labels:s.map(f=>f.k),datasets:[{data:s.map(f=>f.fr),backgroundColor:'rgba(220,38,38,.7)',borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});}
+
+function mkDetCats(reviews){
+  dc('detct');
+  const cc={};reviews.filter(r=>r.fail&&r.cat).forEach(r=>{cc[r.cat]=(cc[r.cat]||0)+1;});
+  const s=Object.entries(cc).sort((a,b)=>b[1]-a[1]);
+  const el=document.getElementById('c-det-cats'),parent=el.parentNode,nc=document.createElement('canvas');nc.id='c-det-cats';parent.replaceChild(nc,el);
+  if(!s.length){document.getElementById('det-cats-sub').textContent='No categorized failures';return;}
+  document.getElementById('det-cats-sub').textContent='Issues driving failures for this agent';
+  CHARTS.detct=new Chart(nc,{type:'bar',data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:PALETTE,borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+function mkDetDFail(reviews){
+  dc('detdf');
+  const ds={};reviews.filter(r=>r.decNorm).forEach(r=>{if(!ds[r.decNorm])ds[r.decNorm]={p:0,f:0};r.fail?ds[r.decNorm].f++:ds[r.decNorm].p++;});
+  const s=Object.entries(ds).filter(([,v])=>v.f>0).map(([k,v])=>({k,fr:Math.round(v.f/(v.p+v.f)*100)})).sort((a,b)=>b.fr-a.fr);
+  const el=document.getElementById('c-det-dfail'),parent=el.parentNode,nc=document.createElement('canvas');nc.id='c-det-dfail';parent.replaceChild(nc,el);
+  if(!s.length)return;
+  const tooltipLabels=s.map(f=>f.k+': '+f.fr+'% fail rate ('+ds[f.k].f+' of '+(ds[f.k].p+ds[f.k].f)+')');
+  CHARTS.detdf=new Chart(nc,{type:'bar',data:{labels:s.map(f=>f.k),datasets:[{data:s.map(f=>f.fr),backgroundColor:'rgba(220,38,38,.7)',borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>tooltipLabels[ctx.dataIndex]}}},scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+
+let APP=null;
+function render(d){
+  APP=d;
+  document.getElementById('s-total').textContent=d.tTotal;
+  document.getElementById('s-dates').textContent=d.dateRange;
+  document.getElementById('s-rate').textContent=d.tRate+'%';
+  document.getElementById('s-rate-sub').textContent=d.tPass+' passed of '+d.tTotal;
+  document.getElementById('s-fail').textContent=d.tFail;
+  document.getElementById('s-fail-sub').textContent=(100-d.tRate).toFixed(1)+'% fail rate';
+  document.getElementById('s-top').textContent=d.top.name;
+  document.getElementById('s-top-sub').textContent=d.top.passRate+'% pass rate 🏆';
+  document.getElementById('dsub').textContent=d.tTotal+' QA reviews · '+d.agList.length+' agents · Updated '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('rkbody').innerHTML=d.agList.map((a,i)=>{const c=a.passRate>=d.tRate?'var(--g)':'var(--r)';const diff=((a.passRate-d.tRate)>=0?'+':'')+((a.passRate-d.tRate).toFixed(1))+'%';return`<tr><td>${MEDALS[i]||(i+1)}</td><td><strong>${a.name}</strong></td><td>${a.total}</td><td style="color:var(--g)">${a.passed}</td><td style="color:var(--r)">${a.failed}</td><td><div style="display:flex;align-items:center;gap:7px"><div class="pw"><div class="pb" style="width:${a.passRate}%;background:${c}"></div></div><strong style="color:${c}">${a.passRate}%</strong></div></td><td><span class="bdg ${a.passRate>=d.tRate?'bp':'bf'}">${diff}</span></td></tr>`;}).join('');
+  const fails=d.reviews.filter(r=>r.fail&&r.issue&&r.cat),coach=d.reviews.filter(r=>r.rank===2&&r.issue&&r.issue.trim()!=='');
+  document.getElementById('fcnt').textContent='('+fails.length+')';
+  document.getElementById('ccnt').textContent='('+coach.length+')';
+  const makeList=items=>items.length?items.map(r=>`<div class="iitem"><div class="idot" style="background:${CAT_COLORS[r.cat]||'#94A3B8'}"></div><div><div class="itxt">${r.issue}</div><div class="imeta">${r.agent} · ${r.decNorm} · ${r.date||'No date'}</div></div></div>`).join(''):'<div class="empty">None found</div>';
+  document.getElementById('flist').innerHTML=makeList(fails);
+  document.getElementById('clist').innerHTML=makeList(coach);
+  document.getElementById('agsel').innerHTML=d.agList.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  mkTrend(d);mkDec(d);mkRnk(d);renderDet();
+}
+function renderDet(){
+  if(!APP)return;
+  const nm=document.getElementById('agsel').value,a=APP.agents[nm];if(!a)return;
+  const c=a.passRate>=APP.tRate?'var(--g)':'var(--r)',diff=(a.passRate-APP.tRate).toFixed(1);
+  document.getElementById('detstats').innerHTML=`<div class="sc"><div class="lbl">Total QAs</div><div class="val" style="color:var(--t1)">${a.total}</div></div><div class="sc"><div class="lbl">Pass Rate</div><div class="val" style="color:${c}">${a.passRate}%</div><div class="sub">${a.passed} passed · ${a.failed} failed</div></div><div class="sc"><div class="lbl">vs Team Avg</div><div class="val" style="color:${c};font-size:22px;margin-top:10px">${diff>=0?'+':''}${diff}%</div><div class="sub">${a.passRate>=APP.tRate?'Above':'Below'} average</div></div>`;
+  document.getElementById('dettitle').textContent=nm+' — Review History ('+a.reviews.length+' reviews)';
+  mkDetCats(a.reviews);mkDetDFail(a.reviews);
+  const sorted=[...a.reviews].sort((x,y)=>{const px=parseDate(x.date),py=parseDate(y.date);if(!px)return 1;if(!py)return -1;return px-py;});
+  document.getElementById('detbody').innerHTML=sorted.map(r=>`<tr><td>${r.date||'—'}</td><td>${r.decision}</td><td><span class="bdg ${r.rank===3?'bp':r.rank===2?'bw':'bf'}">Rank ${r.rank}</span></td><td><span class="bdg ${r.pass?'bp':'bf'}">${r.pass?'✓ Pass':'✗ Fail'}</span></td><td style="color:var(--t2);max-width:320px;font-size:12px">${r.issue||'—'}</td></tr>`).join('');
+}
+function swt(tab){
+  ['ov','rk','ins','det'].forEach((t,i)=>{document.querySelectorAll('.tb')[i].classList.toggle('active',t===tab);document.getElementById('pan-'+t).classList.toggle('active',t===tab);});
+  setTimeout(()=>{if(tab==='ov'&&APP){mkTrend(APP);mkDec(APP);mkRnk(APP);}if(tab==='rk'&&APP)mkAgt(APP);if(tab==='ins'&&APP){mkCats(APP);mkDFail(APP);}if(tab==='det'&&APP)renderDet();},30);
+}
+document.getElementById('csvup').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{render(procData(pCSV(ev.target.result)));toast('✅ Data refreshed from '+f.name);e.target.value='';};rd.readAsText(f);});
 
 const RAW=`Agent Name,Agent Decion,Decision Rank(1-3),Pass/Faill,Issue Wrong,Agent Review Date,,Agent Name,Total QAs,Passed,Failed,Pass %
 Daniel Nya,Rejected,2,Pass,Docs were requested even after the case should have been rejected,3/24/2026,,Daniel Nya,23,20,3,87.0%
@@ -343,275 +406,6 @@ Vrinda Kundu,Requested,3,Pass,N/A,,,,,,,
 Vrinda Kundu,Security Call,3,Pass,N/A,,,,,,,
 Vrinda Kundu,Reject,3,Pass,N/A,4/21/2026,,,,,,
 Vrinda Kundu,Allow,3,Pass,N/A,4/21/2026,,,,,,`;
-
-function pCSV(txt){
-  const lines=txt.trim().split('\n').slice(1);
-  return lines.map(line=>{
-    const cols=[];let i=0,cur='',inq=false;
-    while(i<line.length){
-      if(line[i]==='"'){
-        if(inq&&line[i+1]==='"'){cur+='"';i+=2;}
-        else{inq=!inq;i++;}
-      }else if(line[i]===','&&!inq){cols.push(cur.trim());cur='';i++;}
-      else{cur+=line[i++];}
-    }
-    cols.push(cur.trim());
-    return cols;
-  });
-}
-
-function normDec(d){
-  if(!d)return'Other';const l=d.toLowerCase().trim();
-  if(l.includes('approv')||l==='passed')return'Approved';
-  if(l.includes('reject'))return'Rejected';
-  if(l.includes('request')||l.includes('redoc'))return'Requested Docs';
-  if(l.includes('hold')||l==='held'||l.includes('on hold')||l.includes('technical'))return'Hold/Held';
-  if(l.includes('allow'))return'Allow';
-  if(l.includes('security'))return'Security Call';
-  return'Other';
-}
-
-function catIssue(issue){
-  if(!issue||issue==='N/A'||issue==='')return null;
-  const l=issue.toLowerCase();
-  if(l.includes('wrong doc')||l.includes('incorrect doc')||l.includes('doc requested was incorrect')||l.includes('wrong document')||l.includes('requested the wrong'))return'Wrong Document Type';
-  if(l.includes('no notes')||l.includes('did not leave any notes')||l.includes('left no notes'))return'Missing Notes';
-  if(l.includes('clearer')||l.includes('more specific notes')||l.includes('not clear in internal')||l.includes('specify')||l.includes('note syntax'))return'Note Quality';
-  if(l.includes('sos'))return'SOS Filing Error';
-  if(l.includes('should have been closed')||l.includes('should be closed'))return'App Should Be Closed';
-  if(l.includes('9012'))return'Missing 9012 Case';
-  if(l.includes('incorrectly')||l.includes('incorrect')||(l.includes('failed to approve')||l.includes('failed to reject')||(l.includes('should have')&&!l.includes('should have been closed'))))return'Incorrect Decision';
-  if(l.includes('address')||l.includes('expired')||l.includes('dl')||l.includes('driver'))return'Address/ID Verification';
-  return'Other';
-}
-
-function parseDate(s){
-  if(!s)return null;
-  const p=s.split('/');
-  if(p.length<3)return null;
-  return new Date(+p[2],+p[0]-1,+p[1]);
-}
-
-function procData(rows){
-  const reviews=[], sumMap={};
-  rows.forEach(c=>{
-    const ag=(c[0]||'').trim();
-    if(ag&&ag!=='Agent Name'&&ag!=='Total'){
-      const issue=(c[4]||'').trim();
-      const pf=(c[3]||'').trim().toLowerCase();
-      reviews.push({
-        agent:ag,decision:(c[1]||'').trim(),
-        rank:parseInt(c[2])||3,
-        pass:pf==='pass',fail:pf==='fail',
-        issue:issue==='N/A'?'':issue,
-        cat:catIssue(issue==='N/A'?'':issue),
-        decNorm:normDec(c[1]),
-        date:(c[5]||'').trim()
-      });
-    }
-    const sa=(c[7]||'').trim();
-    if(sa&&sa!=='Agent Name'&&sa!=='Total'){
-      sumMap[sa]={total:+c[8]||0,passed:+c[9]||0,failed:+c[10]||0,passRate:parseFloat((c[11]||'0').replace('%',''))||0};
-    }
-  });
-
-  const agents={};
-  reviews.forEach(r=>{
-    if(!agents[r.agent])agents[r.agent]={name:r.agent,reviews:[],...(sumMap[r.agent]||{})};
-    agents[r.agent].reviews.push(r);
-  });
-  Object.values(agents).forEach(a=>{
-    if(!a.total){
-      a.total=a.reviews.length;a.passed=a.reviews.filter(r=>r.pass).length;
-      a.failed=a.reviews.filter(r=>r.fail).length;
-      a.passRate=a.total>0?Math.round(a.passed/a.total*1000)/10:0;
-    }
-  });
-
-  const agList=Object.values(agents).sort((a,b)=>b.passRate-a.passRate);
-
-  // Weekly trend
-  const wkMap={};
-  reviews.forEach(r=>{
-    const d=parseDate(r.date);if(!d)return;
-    d.setDate(d.getDate()-d.getDay());
-    const k=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    if(!wkMap[k])wkMap[k]={p:0,t:0,dt:d};
-    wkMap[k].t++;if(r.pass)wkMap[k].p++;
-  });
-  const weeks=Object.entries(wkMap).sort((a,b)=>a[1].dt-b[1].dt)
-    .map(([lbl,v])=>({lbl,rate:v.t?Math.round(v.p/v.t*100):0}));
-
-  const allDates=reviews.map(r=>parseDate(r.date)).filter(Boolean).sort((a,b)=>a-b);
-  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  const dateRange=allDates.length>=2?`${fmt(allDates[0])} – ${fmt(allDates[allDates.length-1])} 2026`:'Recent reviews';
-
-  const tTotal=agList.reduce((s,a)=>s+a.total,0);
-  const tPass=agList.reduce((s,a)=>s+a.passed,0);
-  const tFail=agList.reduce((s,a)=>s+a.failed,0);
-  const tRate=tTotal?Math.round(tPass/tTotal*1000)/10:0;
-
-  return{reviews,agents,agList,weeks,tTotal,tPass,tFail,tRate,top:agList[0],dateRange};
-}
-
-function dc(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
-
-function mkTrend(d){
-  dc('t');
-  CHARTS.t=new Chart(document.getElementById('c-trend'),{
-    type:'line',
-    data:{labels:d.weeks.map(w=>w.lbl),datasets:[{label:'Pass %',data:d.weeks.map(w=>w.rate),borderColor:'#4F46E5',backgroundColor:'rgba(79,70,229,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#4F46E5',tension:.3,fill:true}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}
-  });
-}
-
-function mkDec(d){
-  dc('dc');
-  const cnt={};d.reviews.forEach(r=>{cnt[r.decNorm]=(cnt[r.decNorm]||0)+1;});
-  const s=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
-  CHARTS.dc=new Chart(document.getElementById('c-dec'),{
-    type:'doughnut',
-    data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:PALETTE,borderWidth:2,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{font:{size:10},padding:10}}}}
-  });
-}
-
-function mkRnk(d){
-  dc('rk');
-  const rc={1:0,2:0,3:0};d.reviews.forEach(r=>{rc[r.rank]=(rc[r.rank]||0)+1;});
-  CHARTS.rk=new Chart(document.getElementById('c-rnk'),{
-    type:'bar',
-    data:{labels:['Rank 1 — Significant Issue','Rank 2 — Coaching Point','Rank 3 — Correct'],datasets:[{data:[rc[1],rc[2],rc[3]],backgroundColor:['#DC2626','#D97706','#059669'],borderRadius:5,borderSkipped:false}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
-  });
-}
-
-function mkAgt(d){
-  dc('ag');
-  const s=[...d.agList].sort((a,b)=>b.passRate-a.passRate);
-  const avg=d.tRate;
-  CHARTS.ag=new Chart(document.getElementById('c-agt'),{
-    type:'bar',
-    data:{
-      labels:s.map(a=>a.name.split(' ')[0]),
-      datasets:[
-        {type:'bar',label:'Pass %',data:s.map(a=>a.passRate),backgroundColor:s.map(a=>a.passRate>=avg?'rgba(5,150,105,.7)':'rgba(220,38,38,.7)'),borderRadius:5,borderSkipped:false},
-        {type:'line',label:'Team Avg',data:s.map(()=>avg),borderColor:'#4F46E5',borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}
-  });
-}
-
-function mkCats(d){
-  dc('ct');
-  const cc={};d.reviews.filter(r=>r.fail&&r.cat).forEach(r=>{cc[r.cat]=(cc[r.cat]||0)+1;});
-  const s=Object.entries(cc).sort((a,b)=>b[1]-a[1]);
-  CHARTS.ct=new Chart(document.getElementById('c-cats'),{
-    type:'bar',
-    data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:PALETTE,borderRadius:5,borderSkipped:false}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
-  });
-}
-
-function mkDFail(d){
-  dc('df');
-  const ds={};d.reviews.forEach(r=>{if(!ds[r.decNorm])ds[r.decNorm]={p:0,f:0};r.pass?ds[r.decNorm].p++:ds[r.decNorm].f++;});
-  const s=Object.entries(ds).filter(([,v])=>v.f>0).map(([k,v])=>({k,fr:Math.round(v.f/(v.p+v.f)*100)})).sort((a,b)=>b.fr-a.fr);
-  CHARTS.df=new Chart(document.getElementById('c-dfail'),{
-    type:'bar',
-    data:{labels:s.map(f=>f.k),datasets:[{data:s.map(f=>f.fr),backgroundColor:'rgba(220,38,38,.7)',borderRadius:5,borderSkipped:false}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#F1F5F9'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
-  });
-}
-
-const CAT_COLORS={'Wrong Document Type':'#4F46E5','Missing Notes':'#DC2626','Note Quality':'#D97706','SOS Filing Error':'#059669','App Should Be Closed':'#7C3AED','Missing 9012 Case':'#6B7280','Incorrect Decision':'#DC2626','Address/ID Verification':'#0891B2','Other':'#94A3B8'};
-
-let APP=null;
-
-function render(d){
-  APP=d;
-  // Stats
-  document.getElementById('s-total').textContent=d.tTotal;
-  document.getElementById('s-dates').textContent=d.dateRange;
-  document.getElementById('s-rate').textContent=d.tRate+'%';
-  document.getElementById('s-rate-sub').textContent=d.tPass+' passed of '+d.tTotal;
-  document.getElementById('s-fail').textContent=d.tFail;
-  document.getElementById('s-fail-sub').textContent=(100-d.tRate).toFixed(1)+'% fail rate';
-  document.getElementById('s-top').textContent=d.top.name;
-  document.getElementById('s-top-sub').textContent=d.top.passRate+'% pass rate 🏆';
-  document.getElementById('dsub').textContent=d.tTotal+' QA reviews · '+d.agList.length+' agents · Updated '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
-  // Rankings table
-  document.getElementById('rkbody').innerHTML=d.agList.map((a,i)=>{
-    const c=a.passRate>=d.tRate?'var(--g)':'var(--r)';
-    const diff=((a.passRate-d.tRate)>=0?'+':'')+((a.passRate-d.tRate).toFixed(1))+'%';
-    return`<tr><td>${MEDALS[i]||(i+1)}</td><td><strong>${a.name}</strong></td><td>${a.total}</td><td style="color:var(--g)">${a.passed}</td><td style="color:var(--r)">${a.failed}</td><td><div style="display:flex;align-items:center;gap:7px"><div class="pw"><div class="pb" style="width:${a.passRate}%;background:${c}"></div></div><strong style="color:${c}">${a.passRate}%</strong></div></td><td><span class="bdg ${a.passRate>=d.tRate?'bp':'bf'}">${diff}</span></td></tr>`;
-  }).join('');
-
-  // Failure & coaching lists
-  const fails=d.reviews.filter(r=>r.fail&&r.issue);
-  const coach=d.reviews.filter(r=>r.rank===2&&r.issue);
-  document.getElementById('fcnt').textContent='('+fails.length+')';
-  document.getElementById('ccnt').textContent='('+coach.length+')';
-  const makeList=items=>items.length?items.map(r=>`<div class="iitem"><div class="idot" style="background:${CAT_COLORS[r.cat]||'#94A3B8'}"></div><div><div class="itxt">${r.issue||'(No note recorded)'}</div><div class="imeta">${r.agent} · ${r.decNorm} · ${r.date||'No date'}</div></div></div>`).join(''):'<div class="empty">None found</div>';
-  document.getElementById('flist').innerHTML=makeList(fails);
-  document.getElementById('clist').innerHTML=makeList(coach);
-
-  // Agent selector
-  const sel=document.getElementById('agsel');
-  sel.innerHTML=d.agList.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
-
-  mkTrend(d);mkDec(d);mkRnk(d);
-  renderDet();
-}
-
-function renderDet(){
-  if(!APP)return;
-  const nm=document.getElementById('agsel').value;
-  const a=APP.agents[nm];if(!a)return;
-  const c=a.passRate>=APP.tRate?'var(--g)':'var(--r)';
-  const diff=(a.passRate-APP.tRate).toFixed(1);
-  document.getElementById('detstats').innerHTML=`
-    <div class="sc"><div class="lbl">Total QAs</div><div class="val" style="color:var(--t1)">${a.total}</div></div>
-    <div class="sc"><div class="lbl">Pass Rate</div><div class="val" style="color:${c}">${a.passRate}%</div><div class="sub">${a.passed} passed · ${a.failed} failed</div></div>
-    <div class="sc"><div class="lbl">vs Team Avg</div><div class="val" style="color:${c};font-size:22px;margin-top:10px">${diff>=0?'+':''}${diff}%</div><div class="sub">${a.passRate>=APP.tRate?'Above':'Below'} average</div></div>`;
-  document.getElementById('dettitle').textContent=nm+' — Review History ('+a.reviews.length+' reviews)';
-  const sorted=[...a.reviews].sort((x,y)=>{
-    const px=parseDate(x.date),py=parseDate(y.date);
-    if(!px)return 1;if(!py)return -1;return px-py;
-  });
-  document.getElementById('detbody').innerHTML=sorted.map(r=>`<tr>
-    <td>${r.date||'—'}</td><td>${r.decision}</td>
-    <td><span class="bdg ${r.rank===3?'bp':r.rank===2?'bw':'bf'}">Rank ${r.rank}</span></td>
-    <td><span class="bdg ${r.pass?'bp':'bf'}">${r.pass?'✓ Pass':'✗ Fail'}</span></td>
-    <td style="color:var(--t2);max-width:320px;font-size:12px">${r.issue||'—'}</td>
-  </tr>`).join('');
-}
-
-function swt(tab){
-  ['ov','rk','ins','det'].forEach((t,i)=>{
-    document.querySelectorAll('.tb')[i].classList.toggle('active',t===tab);
-    document.getElementById('pan-'+t).classList.toggle('active',t===tab);
-  });
-  setTimeout(()=>{
-    if(tab==='ov'&&APP){mkTrend(APP);mkDec(APP);mkRnk(APP);}
-    if(tab==='rk'&&APP)mkAgt(APP);
-    if(tab==='ins'&&APP){mkCats(APP);mkDFail(APP);}
-  },30);
-}
-
-function toast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-document.getElementById('csvup').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=ev=>{render(procData(pCSV(ev.target.result)));toast('✅ Data refreshed from '+f.name);e.target.value='';};
-  rd.readAsText(f);
-});
 
 render(procData(pCSV(RAW)));
 </script>
